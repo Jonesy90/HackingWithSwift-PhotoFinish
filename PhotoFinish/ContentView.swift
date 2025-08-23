@@ -44,6 +44,7 @@ struct ContentView: View {
                             dragTileIndex = index
                         }
                         .onEnded { value in
+                            handleDragEnded(tileIndex: index, translation: getConstrainedOffset(for: index, translation: value.translation))
                             dragOffset = .zero
                         }
                 )
@@ -148,6 +149,32 @@ struct ContentView: View {
             return CGSize(width: translation.width.clamped(in: 0...sizePlusSpacing), height: 0)
         }
         
+    }
+    
+    
+    /// Triggers when the user has moved it within half a tile size.
+    /// - Parameters:
+    ///   - tileIndex: The chosen tile to be moved.
+    ///   - translation: How far the tile has moved.
+    func handleDragEnded(tileIndex: Int, translation: CGSize) {
+        ///
+        guard let direction = getValidMoveDirection(for: tileIndex) else {
+            return
+        }
+        
+        /// gets us the absolute value of numbers.
+        let dragDistance = switch direction {
+        case .up, .down:
+            abs(translation.height)
+        case .left, .right:
+            abs(translation.width)
+        }
+        
+        /// If the drag distance is more than half way through the endpoint location. Snap it into place.
+        if dragDistance > tileSize * 0.5 {
+            let emptyIndex = images.firstIndex(of: nil)!
+            images.swapAt(tileIndex, emptyIndex)
+        }
     }
     
     
