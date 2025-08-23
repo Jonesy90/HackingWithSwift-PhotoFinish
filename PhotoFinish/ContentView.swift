@@ -30,6 +30,25 @@ struct ContentView: View {
         let startImages = (0..<gridSize * gridSize).dropLast().map { Image(systemName: "\($0).circle")} + [nil]
         _images = State(initialValue: startImages)
     }
+    
+    /// Will find all possible grid locations next to one grid location.
+    /// - Parameter index: The index within the grid.
+    /// - Returns: An array of all the valid indexes in the grid.
+    func getAdjacentIndices(for index: Int) -> [Int] {
+        let row = index / gridSize
+        let col = index % gridSize
+        
+        var adjacent = [Int]()
+        
+        if row > 0 { adjacent.append(index - gridSize) }
+        if row < gridSize - 1 { adjacent.append(index + gridSize) }
+        if col > 0 { adjacent.append(index - 1) }
+        if col < gridSize - 1 { adjacent.append(index + 1) }
+        
+        return adjacent
+    }
+    
+    
 }
 
 #Preview {
