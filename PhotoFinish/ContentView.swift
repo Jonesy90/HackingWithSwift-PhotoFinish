@@ -8,18 +8,48 @@
 import SwiftUI
 
 struct ContentView: View {
+    ///
+    enum MoveDirection {
+        case up, down, left, right
+    }
+    
     var gridSize: Int
     var tileSize: Double
     var columns: [GridItem]
     
     @State private var images: [Image?]
     
+    /// Used to track how much the user dragged on the screen. Starting from zero.
+    /// This is the value that will be passed into the TileView.
+    @State private var dragOffset = CGSize.zero
+    
+    /// Keeps track of the tile being dragged.
+    @State private var dragTileIndex: Int? = nil
+    
     var body: some View {
         LazyVGrid(columns: columns, spacing: 2) {
             ForEach(0..<gridSize * gridSize, id: \.self) { index in
-                TileView(tileSize: tileSize, offset: .zero, image: images[index])
+                TileView(
+                    tileSize: tileSize,
+                    offset: dragTileIndex == index ? dragOffset : .zero,
+                    image: images[index]
+                )
+                /// Adding a drag gesture to the TileView, which will update dragOffset as the user moves their finger on the screen.
+                /// dragGesture will go back to zero when the lifts their finger off the screen.
+                .gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            dragOffset = value.translation
+                            dragTileIndex = index
+                        }
+                        .onEnded { value in
+                            dragOffset = .zero
+                        }
+                )
             }
         }
+        /// Once the view loads, it will automatically run the shuffleTiles method.
+        .onAppear(perform: shuffleTiles)
     }
     
     init(gridSize: Int = 3) {
@@ -63,6 +93,8 @@ struct ContentView: View {
             }
         }
     }
+    
+    
     
     
 }
