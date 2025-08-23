@@ -43,6 +43,25 @@ struct MenuView: View {
             .navigationTitle("PhotoFinish")
         }
     }
+    
+    
+    /// Passes whatever picture the user selects and convert it into a square.
+    /// - Parameter image: Passes in the image the user selects.
+    /// - Returns: Returns a cropped rectangle of the passed in image.
+    func cropToSquare(image: UIImage) -> UIImage {
+        /// Find the shortest side length.
+        let sideLength = min(image.size.width, image.size.height)
+        
+        /// Calculates the X and Y offsets. So we crop to the squares centre.
+        /// This helps provide a cropped rectangle.
+        let x = (image.size.width - sideLength) / 2
+        let y = (image.size.height - sideLength) / 2
+        let cropRect = CGRect(x: x, y: y, width: sideLength, height: sideLength)
+        
+        guard let cgImage = image.cgImage?.cropping(to: cropRect) else { return image }
+        
+        return UIImage(cgImage: cgImage)
+    }
 }
 
 #Preview {
