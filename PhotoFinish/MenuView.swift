@@ -62,6 +62,39 @@ struct MenuView: View {
         
         return UIImage(cgImage: cgImage)
     }
+    
+    /// Fill the pieces array full of SwiftUI images, each storing one small part of the entire Image.
+    /// - Parameter gridSize: Allocated grid size.
+    func splitImageIntoGrid(gridSize: Int) {
+        /// Makes sure we have selected an image. If not, bail out.
+        guard let selectedImage else { return }
+        
+        /// converts the selectedImage into a square image using 'cropToSquare' method.
+        let squareImage = cropToSquare(image: selectedImage)
+        
+        /// the correct size of each tile in proportion to the entire square image, based on the grid.
+        let pieceSize = squareImage.size.width / CGFloat(gridSize)
+        
+        var pieces = [Image]()
+        
+        for row in 0..<gridSize {
+            for col in 0..<gridSize {
+                /// Calculate the rectangle we're cropping to based on the row, column and piece size.
+                let x = Double(col) * pieceSize
+                let y = Double(row) * pieceSize
+                let rect = CGRect(x: x, y: y, width: pieceSize, height: pieceSize)
+                
+                /// performing the actual crop using the underlying CGImage.
+                /// convert it into a SwiftUI Image and put it into the array.
+                if let cgImage = squareImage.ciImage?.cropped(to: rect) {
+                    let pieceImage = UIImage(ciImage: cgImage)
+                    pieces.append(Image(uiImage: pieceImage))
+                }
+            }
+        }
+        
+        gridImages = pieces
+    }
 }
 
 #Preview {
