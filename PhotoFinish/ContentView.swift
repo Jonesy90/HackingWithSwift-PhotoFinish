@@ -51,9 +51,13 @@ struct ContentView: View {
     /// Finds where the empty square is within the grid, finds the indexes in the squares around the empty square, pick a random index from there and swap that square with the empty square.
     func shuffleTiles() {
         for _ in 0..<1000 {
+            /// Finds where the empty tile is.
             let emptyIndex = images.firstIndex(of: nil)!
+            
+            /// Reads the squares around the empty square to give us an [Int] of possible moves.
             let possibleMoves = getAdjacentIndices(for: emptyIndex)
             
+            /// Gets a random Int from the [Int] of possibleMoves and swaps the tiles.
             if let randomMove = possibleMoves.randomElement() {
                 images.swapAt(emptyIndex, randomMove)
             }
