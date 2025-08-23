@@ -39,7 +39,8 @@ struct ContentView: View {
                 .gesture(
                     DragGesture(minimumDistance: 0)
                         .onChanged { value in
-                            dragOffset = value.translation
+//                            dragOffset = value.translation
+                            dragOffset = getConstrainedOffset(for: index, translation: value.translation)
                             dragTileIndex = index
                         }
                         .onEnded { value in
@@ -95,6 +96,59 @@ struct ContentView: View {
     }
     
     
+    /// Returns a valid move direction from a tileIndex.
+    /// - Parameter tileIndex: The tile index location.
+    /// - Returns: Returns a valid move direction using MoveDirection enum.
+    func getValidMoveDirection(for tileIndex: Int) -> MoveDirection? {
+        /// finds where the empty tile is.
+        let emptyIndex = images.firstIndex(of: nil)!
+        /// gets all the indices which are adjacent to the empty tile.
+        let adjacentToEmpty = getAdjacentIndices(for: emptyIndex)
+        
+        /// checks if tileIndex is within the list of indexes which are adjacent to the empty tile.
+        /// if it is not, bail out and return nil.
+        guard adjacentToEmpty.contains(tileIndex) else { return nil }
+        
+        let tileRow = tileIndex /  gridSize
+        let tileCol = tileIndex % gridSize
+        let emptyRow = emptyIndex / gridSize
+        let emptyCol = emptyIndex % gridSize
+        
+        if tileRow == emptyRow {
+            return tileCol < emptyCol ? MoveDirection.right : MoveDirection.left
+        } else {
+            return tileRow < emptyRow ? MoveDirection.down : MoveDirection.up
+        }
+    }
+    
+    
+    /// Ensures the user drags the tile piece within the limited range from the tile start position to the empty tiles position.
+    /// - Parameters:
+    ///   - tileIndex: The chosen tile to be moved.
+    ///   - translation: How far the tile has moved.
+    /// - Returns: The final end position of the moved tile.
+    func getConstrainedOffset(for tileIndex: Int, translation: CGSize) -> CGSize {
+        ///
+        guard let direction = getValidMoveDirection(for: tileIndex) else {
+            return .zero
+        }
+        
+        /// Provides an extra bit of spacing around each tile.
+        let sizePlusSpacing = tileSize + 2
+        
+        ///
+        switch direction {
+        case .up:
+            return CGSize(width: 0, height: translation.height.clamped(in: -sizePlusSpacing...0))
+        case .down:
+            return CGSize(width: 0, height: translation.height.clamped(in: 0...sizePlusSpacing))
+        case .left:
+            return CGSize(width: translation.width.clamped(in: -sizePlusSpacing...0), height: 0)
+        case .right:
+            return CGSize(width: translation.width.clamped(in: 0...sizePlusSpacing), height: 0)
+        }
+        
+    }
     
     
 }
