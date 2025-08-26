@@ -41,6 +41,24 @@ struct MenuView: View {
                 }
             }
             .navigationTitle("PhotoFinish")
+            .navigationDestination(for: Bool.self) { _ in ContentView(gridSize: gridSize, images: gridImages.dropLast() + [nil])}
+            /// modifier called if the user changes image that is selected.
+            .onChange(of: selectedItem) {
+                /// async task.
+                Task {
+                    /// if for some reason we're unable to read the file, we bail out.
+                    guard let data = try await selectedItem?.loadTransferable(type: Data.self) else { return }
+                    /// take the data and assign it to the UIImage of 'selectedImage'.
+                    selectedImage = UIImage(data: data)
+                    splitImageIntoGrid(gridSize: gridSize)
+                }
+            }
+            
+            /// modifier is called if the user updates the grid size.
+            .onChange(of: gridSize) {
+                splitImageIntoGrid(gridSize: gridSize)
+            }
+            
         }
     }
     
@@ -75,8 +93,10 @@ struct MenuView: View {
         /// the correct size of each tile in proportion to the entire square image, based on the grid.
         let pieceSize = squareImage.size.width / CGFloat(gridSize)
         
+        /// creates an empty array of images.
         var pieces = [Image]()
         
+        /// loop over all the rows and columns in the grid and add the cropped slice into the 'pieces' array.
         for row in 0..<gridSize {
             for col in 0..<gridSize {
                 /// Calculate the rectangle we're cropping to based on the row, column and piece size.
