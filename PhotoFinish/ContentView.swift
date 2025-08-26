@@ -54,13 +54,12 @@ struct ContentView: View {
         .onAppear(perform: shuffleTiles)
     }
     
-    init(gridSize: Int = 3) {
+    init(gridSize: Int, images: [Image?]) {
         self.gridSize = gridSize
         tileSize = 356 / Double(gridSize)
         columns = Array(repeating: GridItem(.fixed(tileSize), spacing: 2), count: gridSize)
         
-        let startImages = (0..<gridSize * gridSize).dropLast().map { Image(systemName: "\($0).circle")} + [nil]
-        _images = State(initialValue: startImages)
+        _images = State(initialValue: images)
     }
     
     /// Will find all possible grid locations next to one grid location.
@@ -181,5 +180,8 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    let gridSize = 3
+    let startImages = (0..<gridSize * gridSize).dropLast().map { Image(systemName: "\($0).circle")} + [nil]
+    
+    ContentView(gridSize: 3, images: startImages)
 }
