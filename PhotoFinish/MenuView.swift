@@ -5,8 +5,8 @@
 //  Created by Michael Jones on 23/08/2025.
 //
 
-import SwiftUI
 import PhotosUI
+import SwiftUI
 
 struct MenuView: View {
     /// Import photos from the system.
@@ -106,8 +106,8 @@ struct MenuView: View {
                 
                 /// performing the actual crop using the underlying CGImage.
                 /// convert it into a SwiftUI Image and put it into the array.
-                if let cgImage = squareImage.ciImage?.cropped(to: rect) {
-                    let pieceImage = UIImage(ciImage: cgImage)
+                if let cgImage = squareImage.cgImage?.cropping(to: rect) {
+                    let pieceImage = UIImage(cgImage: cgImage)
                     pieces.append(Image(uiImage: pieceImage))
                 }
             }
