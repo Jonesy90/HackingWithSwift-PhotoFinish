@@ -26,32 +26,53 @@ struct ContentView: View {
     /// Keeps track of the tile being dragged.
     @State private var dragTileIndex: Int? = nil
     
+    /// counter to track how many moves have been made.
+    @State private var moves = 0
+    
+    /// source original that has not been shuffled.
+    var correctLayout: [Image?]
+    
+    var isGameWon: Bool {
+        correctLayout == images
+    }
+    
     var body: some View {
-        LazyVGrid(columns: columns, spacing: 2) {
-            ForEach(0..<gridSize * gridSize, id: \.self) { index in
-                TileView(
-                    tileSize: tileSize,
-                    offset: dragTileIndex == index ? dragOffset : .zero,
-                    image: images[index]
-                )
-                /// Adding a drag gesture to the TileView, which will update dragOffset as the user moves their finger on the screen.
-                /// dragGesture will go back to zero when the lifts their finger off the screen.
-                .gesture(
-                    DragGesture(minimumDistance: 0)
-                        .onChanged { value in
-//                            dragOffset = value.translation
-                            dragOffset = getConstrainedOffset(for: index, translation: value.translation)
-                            dragTileIndex = index
-                        }
-                        .onEnded { value in
-                            handleDragEnded(tileIndex: index, translation: getConstrainedOffset(for: index, translation: value.translation))
-                            dragOffset = .zero
-                        }
-                )
+        VStack {
+            LazyVGrid(columns: columns, spacing: 2) {
+                ForEach(0..<gridSize * gridSize, id: \.self) { index in
+                    TileView(
+                        tileSize: tileSize,
+                        offset: dragTileIndex == index ? dragOffset : .zero,
+                        image: images[index]
+                    )
+                    /// Adding a drag gesture to the TileView, which will update dragOffset as the user moves their finger on the screen.
+                    /// dragGesture will go back to zero when the lifts their finger off the screen.
+                    .gesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                //                            dragOffset = value.translation
+                                dragOffset = getConstrainedOffset(for: index, translation: value.translation)
+                                dragTileIndex = index
+                            }
+                            .onEnded { value in
+                                handleDragEnded(tileIndex: index, translation: getConstrainedOffset(for: index, translation: value.translation))
+                                dragOffset = .zero
+                            }
+                    )
+                }
+            }
+            if isGameWon {
+                Text("You Won!")
+                    .font(.largeTitle)
+                    .foregroundStyle(.green)
+                    .bold(true)
             }
         }
+        
         /// Once the view loads, it will automatically run the shuffleTiles method.
         .onAppear(perform: shuffleTiles)
+        .navigationTitle("Moves: \(moves)")
+        .navigationBarTitleDisplayMode(.inline)
     }
     
     init(gridSize: Int, images: [Image?]) {
@@ -60,6 +81,8 @@ struct ContentView: View {
         columns = Array(repeating: GridItem(.fixed(tileSize), spacing: 2), count: gridSize)
         
         _images = State(initialValue: images)
+        
+        correctLayout = images
     }
     
     /// Will find all possible grid locations next to one grid location.
@@ -173,6 +196,7 @@ struct ContentView: View {
         if dragDistance > tileSize * 0.5 {
             let emptyIndex = images.firstIndex(of: nil)!
             images.swapAt(tileIndex, emptyIndex)
+            moves += 1
         }
     }
     
